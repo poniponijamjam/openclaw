@@ -2,7 +2,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var appState: AppState
-    @Environment(\.openURL) private var openURL
     @State private var confirmThreshold = 0
     @State private var candidateThreshold = 5
 
@@ -23,62 +22,37 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("데이터 소스") {
-                    Toggle(
-                        "Screen Time 연동 사용",
-                        isOn: Binding(
-                            get: { appState.useScreenTime },
-                            set: { enabled in
-                                Task {
-                                    await appState.setUseScreenTime(enabled)
-                                }
-                            }
+                Section(appState.selectedLanguage.text(ko: "진행 방식", en: "Flow")) {
+                    Text(
+                        appState.selectedLanguage.text(
+                            ko: "IdleFolder는 Screen Time 없이 규칙(30일/90일) + 사용자 선택(필수 앱 예외)으로 정리 대상을 계산합니다.",
+                            en: "IdleFolder computes cleanup targets without Screen Time, using rules (30/90-day thresholds) + user selection (whitelist)."
                         )
                     )
-                    .disabled(!AppState.screenTimeFeatureEnabled)
-
-                    Text("권한 상태: \(authStatusLabel(appState.screenTimeAuthStatus))")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-
-                    if !AppState.screenTimeFeatureEnabled {
-                        Text("개인팀 제약으로 현재는 수동 모드만 지원됩니다.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Text(appState.screenTimeSnapshotStatus)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-
-                    if appState.screenTimeAuthStatus == .denied {
-                        Button("설정 앱에서 권한 열기") {
-                            if let url = URL(string: UIApplication.openSettingsURLString) {
-                                openURL(url)
-                            }
-                        }
-                    }
-
-                    if AppState.screenTimeFeatureEnabled {
-                        Button("Screen Time 권한 다시 요청") {
-                            Task {
-                                await appState.requestScreenTimePermissionForQA()
-                            }
-                        }
-                    }
-
-                    if let info = appState.scanInfoMessage {
-                        Text(info)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 }
 
-                Section("Idle 판별 기준") {
-                    Stepper("30일 기준 분 임계값: \(confirmThreshold)", value: $confirmThreshold, in: 0...30)
-                    Stepper("90일 기준 분 임계값: \(candidateThreshold)", value: $candidateThreshold, in: 1...60)
+                Section(appState.selectedLanguage.text(ko: "Idle 판별 기준", en: "Idle Rules")) {
+                    Stepper(
+                        appState.selectedLanguage.text(
+                            ko: "30일 기준 분 임계값: \(confirmThreshold)",
+                            en: "30-day threshold (min): \(confirmThreshold)"
+                        ),
+                        value: $confirmThreshold,
+                        in: 0...30
+                    )
 
-                    Button("기준 저장") {
+                    Stepper(
+                        appState.selectedLanguage.text(
+                            ko: "90일 기준 분 임계값: \(candidateThreshold)",
+                            en: "90-day threshold (min): \(candidateThreshold)"
+                        ),
+                        value: $candidateThreshold,
+                        in: 1...60
+                    )
+
+                    Button(appState.selectedLanguage.text(ko: "기준 저장", en: "Save Rules")) {
                         appState.updateRule(
                             IdleRule(
                                 confirmMinutesThreshold: confirmThreshold,
@@ -88,9 +62,9 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("리마인더") {
+                Section(appState.selectedLanguage.text(ko: "리마인더", en: "Reminder")) {
                     Toggle(
-                        "2주마다 정리 알림",
+                        appState.selectedLanguage.text(ko: "2주마다 정리 알림", en: "Biweekly cleanup reminder"),
                         isOn: Binding(
                             get: { appState.reminderEnabled },
                             set: { enabled in
@@ -101,9 +75,14 @@ struct SettingsView: View {
                         )
                     )
 
-                    Text("활성화하면 14일마다 로컬 알림을 보냅니다.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        appState.selectedLanguage.text(
+                            ko: "활성화하면 14일마다 로컬 알림을 보냅니다.",
+                            en: "When enabled, a local reminder is sent every 14 days."
+                        )
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
 
                     if let error = appState.reminderErrorMessage {
                         Text(error)
@@ -112,16 +91,53 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("개인정보") {
-                    Text("사용량 데이터는 기본적으로 온디바이스 처리됩니다.")
-                        .font(.subheadline)
+                Section(appState.selectedLanguage.text(ko: "개인정보 및 추적", en: "Privacy & Tracking")) {
+                    Text(
+                        appState.selectedLanguage.text(
+                            ko: "앱 사용량/정리 기록은 기본적으로 기기 내부에만 저장되며 외부 서버로 전송하지 않습니다.",
+                            en: "Usage and cleanup records are stored on-device by default and are not sent to external servers."
+                        )
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                    Text(
+                        appState.selectedLanguage.text(
+                            ko: "광고 식별자(IDFA)를 사용하지 않으며, 타사 앱/웹 간 추적을 수행하지 않습니다.",
+                            en: "The app does not use IDFA and does not perform cross-app or cross-site tracking."
+                        )
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                    Text(
+                        appState.selectedLanguage.text(
+                            ko: "Screen Time 권한 없이 동작하며, 사용자가 직접 설정한 규칙과 예외 앱 선택만 사용합니다.",
+                            en: "The app works without Screen Time permission, using only user-configured rules and whitelist selections."
+                        )
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 }
 
-                if AppState.screenTimeFeatureEnabled {
-                    Section("QA") {
-                        NavigationLink("Screen Time E2E 검증") {
-                            ScreenTimeQADebugView()
+                Section(appState.selectedLanguage.text(ko: "앱 내 결제", en: "In-App Purchase")) {
+                    Button {
+                        Task {
+                            await appState.restorePurchases()
                         }
+                    } label: {
+                        if appState.restoreInProgress {
+                            ProgressView(appState.selectedLanguage.text(ko: "복원 중...", en: "Restoring..."))
+                        } else {
+                            Text(appState.selectedLanguage.text(ko: "구매 복원", en: "Restore Purchases"))
+                        }
+                    }
+                    .disabled(appState.restoreInProgress)
+
+                    if let message = appState.restoreMessage {
+                        Text(message)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -130,19 +146,6 @@ struct SettingsView: View {
                 confirmThreshold = appState.rule.confirmMinutesThreshold
                 candidateThreshold = appState.rule.candidateMinutesThreshold
             }
-        }
-    }
-
-    private func authStatusLabel(_ status: ScreenTimeAuthorizationStatus) -> String {
-        switch status {
-        case .notDetermined:
-            return "미결정"
-        case .approved:
-            return "승인됨"
-        case .denied:
-            return "거부됨"
-        case .unavailable:
-            return "사용 불가"
         }
     }
 }

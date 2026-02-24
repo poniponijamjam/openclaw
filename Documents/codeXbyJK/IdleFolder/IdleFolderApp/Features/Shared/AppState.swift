@@ -1,4 +1,5 @@
 import Foundation
+import StoreKit
 
 enum AppLanguage: String, CaseIterable, Identifiable {
     case korean = "ko"
@@ -53,6 +54,8 @@ final class AppState: ObservableObject {
     @Published var screenTimeSnapshotStatus: String = "스냅샷 없음"
     @Published var selectedLanguage: AppLanguage
     @Published var hasSelectedLanguage: Bool
+    @Published var restoreInProgress: Bool = false
+    @Published var restoreMessage: String?
 
     private let usageProvider: AppUsageProviding
     private let screenTimeUsageProvider: AppUsageProviding
@@ -297,6 +300,41 @@ final class AppState: ObservableObject {
 
     func refreshSnapshotStatusForQA() {
         refreshSnapshotStatus()
+    }
+
+    func restorePurchases() async {
+        restoreInProgress = true
+        restoreMessage = nil
+
+        do {
+            try await AppStore.sync()
+
+            var restoredProductIds: [String] = []
+            for await result in Transaction.currentEntitlements {
+                guard case .verified(let transaction) = result else { continue }
+                restoredProductIds.append(transaction.productID)
+            }
+
+            if restoredProductIds.isEmpty {
+                restoreMessage = selectedLanguage.text(
+                    ko: "복원 완료: 활성 구매 내역이 없습니다.",
+                    en: "Restore completed: no active purchases found."
+                )
+            } else {
+                let count = Set(restoredProductIds).count
+                restoreMessage = selectedLanguage.text(
+                    ko: "복원 완료: \(count)개 상품이 확인되었습니다.",
+                    en: "Restore completed: \(count) product(s) restored."
+                )
+            }
+        } catch {
+            restoreMessage = selectedLanguage.text(
+                ko: "복원 실패: \(error.localizedDescription)",
+                en: "Restore failed: \(error.localizedDescription)"
+            )
+        }
+
+        restoreInProgress = false
     }
 
     func selectLanguage(_ language: AppLanguage) {

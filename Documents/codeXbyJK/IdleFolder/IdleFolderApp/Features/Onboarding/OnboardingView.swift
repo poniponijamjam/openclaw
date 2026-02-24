@@ -38,16 +38,19 @@ struct OnboardingView: View {
                     .pickerStyle(.segmented)
                 }
 
-                Section(appState.selectedLanguage.text(ko: "권한 및 데이터", en: "Permissions and Data")) {
+                Section(appState.selectedLanguage.text(ko: "데이터 처리", en: "Data Handling")) {
                     Text(appState.selectedLanguage.text(
-                        ko: "선택 권한(사용량 기반)이 없어도 수동 모드로 정리 기능을 사용할 수 있습니다.",
-                        en: "You can still use cleanup features in manual mode without usage permission."
+                        ko: "Screen Time 권한 없이 규칙(30일/90일)과 사용자 선택(예외 앱)으로 정리 기능을 사용합니다.",
+                        en: "Cleanup runs without Screen Time permission, using rules (30/90-day) and user selection (whitelist)."
                     ))
                         .font(.subheadline)
-                    Toggle(
-                        appState.selectedLanguage.text(ko: "수동 모드로 시작", en: "Start in Manual Mode"),
-                        isOn: $appState.useManualMode
-                    )
+
+                    Text(appState.selectedLanguage.text(
+                        ko: "앱 데이터는 기본적으로 기기 내부에만 저장되며 외부 서버로 전송하지 않습니다.",
+                        en: "App data is stored on-device by default and is not sent to external servers."
+                    ))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 }
 
                 Section {
