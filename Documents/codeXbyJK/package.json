@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "@google/genai": "^1.42.0",
+    "@notionhq/client": "^5.9.0",
+    "dotenv": "^17.3.1",
+    "playwright": "^1.58.2"
+  },
+  "scripts": {
+    "blogger:login": "node automation/blogger/login_blogger.js",
+    "blogger:login:whale": "node automation/blogger/login_blogger.js --whale",
+    "blogger:publish": "node automation/blogger/publish_queue.js",
+    "blogger:publish:whale": "node automation/blogger/publish_queue.js content/drafts/2026-02-23-publish-queue.json --whale",
+    "blogger:publish:dry": "node automation/blogger/publish_queue.js content/drafts/2026-02-23-publish-queue.json --dry-run",
+    "blogger:publish:whale:dry": "node automation/blogger/publish_queue.js content/drafts/2026-02-23-publish-queue.json --whale --dry-run",
+    "blogger:approve-publish": "node automation/blogger/publish_after_telegram_approval.js content/drafts/2026-02-23-publish-queue.json",
+    "blogger:approve-publish:whale": "node automation/blogger/publish_after_telegram_approval.js content/drafts/2026-02-23-publish-queue.json --whale",
+    "progress:dry": "node IdleFolder/scripts/notion_progress_report.js --dry-run",
+    "progress:push": "node IdleFolder/scripts/notion_progress_report.js",
+    "ios:sim:auto": "bash IdleFolder/scripts/run_sim_auto.sh",
+    "mcp:xcode:setup": "bash IdleFolder/scripts/setup_xcode_mcp.sh"
+  }
+}
