@@ -1,7 +1,7 @@
 # PluginDeck
 
 macOS 오디오 플러그인(AU / VST2 / VST3 / CLAP / AAX)이 어느 드라이브 어디에 있는지,
-Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M1 (읽기 전용).
+Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M2 (읽기 전용).
 
 설계: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
@@ -26,6 +26,13 @@ Xcode로 열기: `open Package.swift` 후 `PluginDeck` 스킴 실행.
 - 필터: Intel 전용, 오프라인, DAW에서 안 보임, 외장 드라이브
 - Finder에서 보기
 - 삭제 / 이동 기능 없음 (M3부터)
+
+## M2 범위
+
+- 외장 드라이브에서 플러그인 폴더 자동 찾기 (첫 실행 시 자동, 이후 툴바 버튼). 찾은 폴더를 Ableton VST2/VST3 커스텀 폴더로 등록
+- 중복 정리 제안 (툴바 "중복 정리"): VST3가 있는 제품의 VST2 / Ableton에서 AU를 끄면 사라지는 제품 / VST2만 있는 제품
+- 내보내기 (파일 메뉴): Markdown 체크리스트 (Cmd+E), JSON 스냅샷 (Shift+Cmd+E)
+- 파일 이동 스크립트 생성은 M3
 
 ## 폴더 구조
 

@@ -35,6 +35,7 @@ final class LibraryModel: ObservableObject {
     @Published var filter: QuickFilter = .all
     @Published var searchText = ""
     @Published var selection: Product.ID?
+    @Published var sheet: AppSheet?
     @Published var settings: HostSettings { didSet { saveSettings() } }
     @Published var extraFolders: [String] { didSet { saveSettings() } }
 

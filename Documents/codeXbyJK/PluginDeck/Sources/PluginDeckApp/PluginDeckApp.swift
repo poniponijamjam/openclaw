@@ -17,7 +17,24 @@ struct PluginDeckApp: App {
             LibraryView()
                 .environmentObject(model)
                 .frame(minWidth: 900, minHeight: 560)
-                .onAppear { model.rescan() }
+                .onAppear {
+                    model.rescan()
+                    model.openDiscoveryOnFirstLaunch()
+                }
+                .sheet(item: $model.sheet) { sheet in
+                    switch sheet {
+                    case .discovery: DiscoveryView().environmentObject(model)
+                    case .cleanup: CleanupView().environmentObject(model)
+                    }
+                }
+        }
+        .commands {
+            CommandGroup(after: .saveItem) {
+                Button("체크리스트 내보내기 (Markdown)...") { model.exportMarkdown() }
+                    .keyboardShortcut("e", modifiers: [.command])
+                Button("스냅샷 내보내기 (JSON)...") { model.exportJSON() }
+                    .keyboardShortcut("e", modifiers: [.command, .shift])
+            }
         }
         Settings {
             SettingsView().environmentObject(model)
@@ -57,6 +74,16 @@ struct LibraryView: View {
                 }
                 Picker("필터", selection: $model.filter) {
                     ForEach(QuickFilter.allCases) { Text($0.rawValue).tag($0) }
+                }
+                Button {
+                    model.sheet = .discovery
+                } label: {
+                    Label("외장 드라이브에서 찾기", systemImage: "externaldrive.badge.plus")
+                }
+                Button {
+                    model.sheet = .cleanup
+                } label: {
+                    Label("중복 정리", systemImage: "square.stack.3d.down.right")
                 }
                 Button {
                     model.rescan()
