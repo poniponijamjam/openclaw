@@ -1,7 +1,7 @@
 # PluginDeck
 
 macOS 오디오 플러그인(AU / VST2 / VST3 / CLAP / AAX)이 어느 드라이브 어디에 있는지,
-Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M5.
+Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M6.
 
 설계: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
@@ -73,10 +73,23 @@ bash ~/Library/Application\ Support/PluginDeck/Scripts/disable-YYYYMMDD-HHMMSS.s
 - 선택한 잔여물은 플러그인 번들과 같은 스크립트로 Vault에 옮김 (복구 스크립트 포함)
 - 설치 기록 자체(`pkgutil --forget`)는 지우지 않음
 
+## M6 범위 (레트로 스킨)
+
+90년대 말 데스크톱 음악 플레이어 느낌의 자체 디자인. 특정 제품의 스킨 이미지·로고·이름은 쓰지 않음.
+
+- 위: "플레이어" 패널 - 제품 수(LCD 숫자), 흐르는 제목(선택한 제품), 상태 배지(Intel 전용 / 오프라인 / 비활성화), 포맷별 막대
+- 아래 왼쪽: "플레이리스트" - 번호, 이름 - 벤더, 포맷, 용량. 경고(Intel 전용/오프라인)는 주황, 비활성화는 흐리게
+- 아래 오른쪽: "정보" 패널 - 포맷별 경로/드라이브/버전/아키텍처/DAW + Finder / Disable / Restore 버튼
+- 설정 > 화면 > "레트로 스킨 사용"을 끄면 기본 macOS 화면
+- 색/글꼴은 `Sources/PluginDeckSkin/RetroTheme.swift` 한 곳에서 관리
+- 시트(외장 찾기, 중복 정리 등)는 아직 기본 macOS 스타일
+- CI가 스킨을 PNG로 렌더링해 `skin-snapshots` 결과물로 올림
+
 ## 폴더 구조
 
 ```
 Sources/PluginDeckCore/   UI 없는 로직 (스캔, 번들 분석, 묶기)
-Sources/PluginDeckApp/    SwiftUI 화면 (임시 기본 디자인, M6에서 레트로 스킨)
+Sources/PluginDeckSkin/   레트로 스킨 (색/글꼴 토큰 + 화면 부품, 값만 받음)
+Sources/PluginDeckApp/    앱 (상태, 시트, 스킨 연결)
 Tests/PluginDeckCoreTests/
 ```

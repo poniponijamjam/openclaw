@@ -5,9 +5,13 @@ import SwiftUI
 /// Ableton Live 12 환경설정 > Plug-Ins 탭과 같은 값을 입력받는다.
 struct SettingsView: View {
     @EnvironmentObject var model: LibraryModel
+    @AppStorage("PluginDeck.RetroSkin") private var retro = true
 
     var body: some View {
         Form {
+            SwiftUI.Section("화면") {
+                Toggle("레트로 스킨 사용", isOn: $retro)
+            }
             SwiftUI.Section("Ableton Live 12 (환경설정 > Plug-Ins 와 똑같이 맞춰주세요)") {
                 Toggle("Audio Units 사용", isOn: $model.settings.abletonUseAudioUnits)
                 Toggle("VST2 시스템 폴더 사용", isOn: $model.settings.abletonUseVST2SystemFolders)

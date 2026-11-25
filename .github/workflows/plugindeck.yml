@@ -20,4 +20,14 @@ jobs:
       - name: Build
         run: swift build
       - name: Test
+        env:
+          PLUGINDECK_SNAPSHOT_DIR: ${{ runner.temp }}/snapshots
         run: swift test
+      - name: Upload skin snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skin-snapshots
+          path: ${{ runner.temp }}/snapshots
+          if-no-files-found: ignore
+          retention-days: 14

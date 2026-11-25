@@ -14,7 +14,7 @@ struct PluginDeckApp: App {
 
     var body: some Scene {
         WindowGroup("PluginDeck") {
-            LibraryView()
+            RootView()
                 .environmentObject(model)
                 .frame(minWidth: 900, minHeight: 560)
                 .onAppear {
@@ -49,7 +49,15 @@ struct PluginDeckApp: App {
     }
 }
 
-// MARK: - 메인 화면 (디자인은 M6에서 레트로 스킨으로 교체)
+/// 설정에서 레트로 스킨 / 기본 화면 선택
+struct RootView: View {
+    @AppStorage("PluginDeck.RetroSkin") private var retro = true
+    var body: some View {
+        if retro { RetroLibraryView() } else { LibraryView() }
+    }
+}
+
+// MARK: - 기본(시스템) 화면
 
 struct LibraryView: View {
     @EnvironmentObject var model: LibraryModel
