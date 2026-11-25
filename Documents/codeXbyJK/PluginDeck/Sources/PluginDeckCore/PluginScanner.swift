@@ -11,10 +11,12 @@ public struct ScanResult: Sendable {
 public struct PluginScanner: Sendable {
     public var maxDepth: Int
     public var computeSizes: Bool
+    public var vaultLayout: VaultLayout
 
-    public init(maxDepth: Int = 4, computeSizes: Bool = true) {
+    public init(maxDepth: Int = 4, computeSizes: Bool = true, vaultLayout: VaultLayout = VaultLayout()) {
         self.maxDepth = maxDepth
         self.computeSizes = computeSizes
+        self.vaultLayout = vaultLayout
     }
 
     public func scan(_ locations: [ScanLocation]) -> ScanResult {
@@ -57,7 +59,7 @@ public struct PluginScanner: Sendable {
 
             // 플러그인이 아니면 하위 폴더로 들어감 (벤더별 하위 폴더: VST/Waves/ 등)
             var isDir: ObjCBool = false
-            if depth < maxDepth,
+            if depth < (location.maxDepth ?? maxDepth),
                FileManager.default.fileExists(atPath: path, isDirectory: &isDir), isDir.boolValue {
                 walk(directory: path, location: location, depth: depth + 1, visited: &visited, emit: emit)
             }
@@ -66,6 +68,16 @@ public struct PluginScanner: Sendable {
 
     private func makeBundle(path: String, format: PluginFormat, location: ScanLocation,
                             symlinkTarget: String?) -> PluginBundle {
+        var bundle = makeRawBundle(path: path, format: format, location: location, symlinkTarget: symlinkTarget)
+        if location.scope == .vault {
+            bundle.status = .disabled
+            bundle.originalPath = vaultLayout.originalPath(forVaultItem: path, vaultRoot: location.path)
+        }
+        return bundle
+    }
+
+    private func makeRawBundle(path: String, format: PluginFormat, location: ScanLocation,
+                               symlinkTarget: String?) -> PluginBundle {
         let resolved = symlinkTarget ?? path
         let exists = FileManager.default.fileExists(atPath: resolved)
 

@@ -5,6 +5,8 @@ import SwiftUI
 enum AppSheet: String, Identifiable {
     case discovery
     case cleanup
+    case history
+    case scriptResult
     var id: String { rawValue }
 }
 

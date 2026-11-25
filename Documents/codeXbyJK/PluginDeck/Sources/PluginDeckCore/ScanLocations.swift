@@ -5,11 +5,14 @@ public struct ScanLocation: Hashable, Sendable {
     public var scope: PluginScope
     /// nil이면 폴더 안의 모든 포맷을 확장자로 판별 (커스텀 폴더용)
     public var format: PluginFormat?
+    /// nil이면 스캐너 기본값. Vault는 원래 경로 구조를 그대로 담아서 더 깊다.
+    public var maxDepth: Int?
 
-    public init(path: String, scope: PluginScope, format: PluginFormat?) {
+    public init(path: String, scope: PluginScope, format: PluginFormat?, maxDepth: Int? = nil) {
         self.path = path
         self.scope = scope
         self.format = format
+        self.maxDepth = maxDepth
     }
 }
 
@@ -36,11 +39,16 @@ public enum ScanLocations {
     }
 
     public static func all(settings: HostSettings, extraFolders: [String] = [],
-                           home: String = NSHomeDirectory(), root: String = "") -> [ScanLocation] {
+                           home: String = NSHomeDirectory(), root: String = "",
+                           vault: VaultLayout? = VaultLayout()) -> [ScanLocation] {
         var result = standard(home: home, root: root)
-        let known = Set(result.map(\.path))
+        var known = Set(result.map(\.path))
         for folder in settings.customFolders + extraFolders where !known.contains(folder) {
             result.append(ScanLocation(path: folder, scope: .custom, format: nil))
+            known.insert(folder)
+        }
+        for v in vault?.existingVaultRoots() ?? [] where !known.contains(v) {
+            result.append(ScanLocation(path: v, scope: .vault, format: nil, maxDepth: 14))
         }
         return result
     }

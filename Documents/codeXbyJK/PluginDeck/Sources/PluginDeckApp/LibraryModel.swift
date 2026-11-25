@@ -16,6 +16,7 @@ enum QuickFilter: String, CaseIterable, Identifiable {
     case offline = "오프라인"
     case unusedFormats = "DAW에서 안 보임"
     case external = "외장 드라이브"
+    case disabled = "비활성화됨"
     var id: String { rawValue }
 }
 
@@ -36,6 +37,8 @@ final class LibraryModel: ObservableObject {
     @Published var searchText = ""
     @Published var selection: Product.ID?
     @Published var sheet: AppSheet?
+    @Published var lastScripts: ScriptPair?
+    @Published var scriptError: String?
     @Published var settings: HostSettings { didSet { saveSettings() } }
     @Published var extraFolders: [String] { didSet { saveSettings() } }
 
@@ -82,6 +85,7 @@ final class LibraryModel: ObservableObject {
         case .offline: return b.status == .offline
         case .unusedFormats: return visibleHosts(b).isEmpty
         case .external: return b.volume?.isInternal == false
+        case .disabled: return b.status == .disabled
         }
     }
 

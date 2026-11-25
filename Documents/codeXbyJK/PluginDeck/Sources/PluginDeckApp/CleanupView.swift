@@ -31,13 +31,18 @@ extension LibraryModel {
     }
 }
 
-/// 중복 정리 제안 (M2: 보기만. 이동 스크립트 생성은 M3)
+/// 중복 정리 제안 + 선택한 VST2의 비활성화 스크립트 생성
 struct CleanupView: View {
     @EnvironmentObject var model: LibraryModel
     @Environment(\.dismiss) private var dismiss
+    /// 체크 해제한 VST2 번들 (기본은 전부 선택)
+    @State private var excluded = Set<String>()
 
     var body: some View {
         let plan = model.cleanupPlan
+        let selected = plan.redundantVST2.filter { !excluded.contains($0.id) }
+        let conflicts = VaultLayout().conflicts(withScanFolders: model.settings.customFolders + model.extraFolders,
+                                                forOriginals: selected.map(\.path))
         VStack(alignment: .leading, spacing: 12) {
             Text("중복 정리 제안").font(.title2.bold())
             Text("규칙: Logic은 AU, Ableton은 VST3. AU는 건드리지 않고, VST3가 있는 제품의 VST2만 비활성화 후보로 봅니다.")
@@ -48,6 +53,11 @@ struct CleanupView: View {
                     if plan.redundantVST2.isEmpty { Text("없음").foregroundStyle(.secondary) }
                     ForEach(plan.redundantVST2) { b in
                         HStack {
+                            Toggle("", isOn: Binding(
+                                get: { !excluded.contains(b.id) },
+                                set: { on in if on { excluded.remove(b.id) } else { excluded.insert(b.id) } }
+                            ))
+                            .labelsHidden()
                             Text(b.name)
                             Spacer()
                             Text(b.path).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
@@ -77,10 +87,19 @@ struct CleanupView: View {
             }
             .frame(minHeight: 360)
 
-            Text("이동 스크립트 생성은 다음 단계(M3)에서 추가됩니다. 지금은 확인용입니다.")
+            if !conflicts.isEmpty {
+                Text("주의: Vault 폴더가 스캔 폴더 안에 있습니다. 비활성화해도 Ableton에 계속 보일 수 있습니다: " + conflicts.joined(separator: ", "))
+                    .font(.caption).foregroundStyle(.orange)
+            }
+            Text("스크립트만 만듭니다. 파일은 터미널에서 직접 실행해야 옮겨집니다. 복구 스크립트가 같이 만들어집니다.")
                 .font(.caption).foregroundStyle(.secondary)
 
             HStack {
+                Button("선택한 VST2 \(selected.count)개 비활성화 스크립트 만들기") {
+                    // 시트를 닫지 않고 결과 화면으로 교체
+                    model.makeDisableScripts(selected)
+                }
+                .disabled(selected.isEmpty)
                 Spacer()
                 Button("닫기") { dismiss() }.keyboardShortcut(.defaultAction)
             }

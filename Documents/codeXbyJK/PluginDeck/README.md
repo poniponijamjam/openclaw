@@ -1,7 +1,7 @@
 # PluginDeck
 
 macOS 오디오 플러그인(AU / VST2 / VST3 / CLAP / AAX)이 어느 드라이브 어디에 있는지,
-Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M2 (읽기 전용).
+Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M3.
 
 설계: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
@@ -32,7 +32,22 @@ Xcode로 열기: `open Package.swift` 후 `PluginDeck` 스킴 실행.
 - 외장 드라이브에서 플러그인 폴더 자동 찾기 (첫 실행 시 자동, 이후 툴바 버튼). 찾은 폴더를 Ableton VST2/VST3 커스텀 폴더로 등록
 - 중복 정리 제안 (툴바 "중복 정리"): VST3가 있는 제품의 VST2 / Ableton에서 AU를 끄면 사라지는 제품 / VST2만 있는 제품
 - 내보내기 (파일 메뉴): Markdown 체크리스트 (Cmd+E), JSON 스냅샷 (Shift+Cmd+E)
-- 파일 이동 스크립트 생성은 M3
+
+## M3 범위
+
+앱은 여전히 파일을 직접 옮기지 않습니다. 터미널에서 실행할 bash 스크립트만 만듭니다.
+
+- "중복 정리"에서 VST2 후보를 골라 **비활성화 스크립트 + 복구 스크립트** 쌍 생성. 상세 화면에서 번들 하나씩도 가능
+- 옮기는 위치 (Vault, 항상 같은 드라이브 안):
+  - 내장: `/Users/Shared/PluginDeck Vault/<원래 절대 경로>`
+  - 외장: `/Volumes/<드라이브>/PluginDeck Vault/<드라이브 안 경로>`
+- Vault도 스캔해서 "비활성화됨"으로 표시 (필터 제공). 원래 위치를 경로에서 계산하므로 Vault 번들에서 복구 스크립트를 다시 만들 수 있음
+- 스크립트 동작: Logic / Ableton 실행 중이면 중단, 대상에 이미 있으면 덮어쓰지 않고 건너뜀, 권한이 필요할 때만 sudo
+- 이력: `~/Library/Application Support/PluginDeck/Scripts/` 의 스크립트 목록, 터미널 명령 복사
+
+```bash
+bash ~/Library/Application\ Support/PluginDeck/Scripts/disable-YYYYMMDD-HHMMSS.sh
+```
 
 ## 폴더 구조
 

@@ -49,12 +49,15 @@ public enum PluginScope: String, Codable, Sendable {
     case system   // /Library/...
     case user     // ~/Library/...
     case custom   // 사용자가 추가한 폴더 (예: Ableton VST 커스텀 폴더)
+    case vault    // PluginDeck Vault (비활성화된 번들 보관 폴더)
 }
 
 public enum PluginStatus: String, Codable, Sendable {
     case active
     /// 심볼릭 링크 대상이 없는 상태 (외장 드라이브 분리 등)
     case offline
+    /// Vault로 옮겨진 상태. DAW에서 안 보임
+    case disabled
 }
 
 public enum CPUArch: String, Codable, Sendable, Comparable {
@@ -106,10 +109,13 @@ public struct PluginBundle: Identifiable, Hashable, Codable, Sendable {
     public var architectures: [CPUArch]
     public var sizeBytes: Int64?
     public var modifiedAt: Date?
+    /// status == .disabled 일 때 원래 위치 (복구 대상)
+    public var originalPath: String?
 
     public init(path: String, resolvedPath: String, isSymlink: Bool, format: PluginFormat, scope: PluginScope,
                 status: PluginStatus, volume: VolumeInfo?, name: String, bundleID: String?, version: String?,
-                vendor: String?, architectures: [CPUArch], sizeBytes: Int64?, modifiedAt: Date?) {
+                vendor: String?, architectures: [CPUArch], sizeBytes: Int64?, modifiedAt: Date?,
+                originalPath: String? = nil) {
         self.path = path
         self.resolvedPath = resolvedPath
         self.isSymlink = isSymlink
@@ -124,6 +130,7 @@ public struct PluginBundle: Identifiable, Hashable, Codable, Sendable {
         self.architectures = architectures
         self.sizeBytes = sizeBytes
         self.modifiedAt = modifiedAt
+        self.originalPath = originalPath
     }
 
     /// arm64 바이너리가 없으면 Apple Silicon 맥에서 DAW를 Rosetta로 실행해야 로드됨.

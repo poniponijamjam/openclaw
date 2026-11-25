@@ -25,6 +25,8 @@ struct PluginDeckApp: App {
                     switch sheet {
                     case .discovery: DiscoveryView().environmentObject(model)
                     case .cleanup: CleanupView().environmentObject(model)
+                    case .history: HistoryView().environmentObject(model)
+                    case .scriptResult: ScriptResultView().environmentObject(model)
                     }
                 }
         }
@@ -86,6 +88,11 @@ struct LibraryView: View {
                     Label("중복 정리", systemImage: "square.stack.3d.down.right")
                 }
                 Button {
+                    model.sheet = .history
+                } label: {
+                    Label("스크립트 이력", systemImage: "clock.arrow.circlepath")
+                }
+                Button {
                     model.rescan()
                 } label: {
                     if model.isScanning { ProgressView().controlSize(.small) } else { Label("다시 스캔", systemImage: "arrow.clockwise") }
@@ -115,6 +122,9 @@ struct ProductRow: View {
             if product.bundles.contains(where: \.isIntelOnly) {
                 Image(systemName: "cpu").foregroundStyle(.orange).help("Intel 전용 번들 있음")
             }
+            if product.bundles.contains(where: { $0.status == .disabled }) {
+                Image(systemName: "archivebox").foregroundStyle(.secondary).help("비활성화된 번들 있음 (Vault)")
+            }
             if product.bundles.contains(where: { $0.status == .offline }) {
                 Image(systemName: "externaldrive.badge.xmark").foregroundStyle(.red).help("드라이브 연결 안 됨")
             }
@@ -139,6 +149,10 @@ struct ProductDetailView: View {
             ForEach(product.bundles) { b in
                 SwiftUI.Section(b.format.displayName) {
                     LabeledContent("위치", value: b.path).textSelection(.enabled)
+                    if b.status == .disabled {
+                        LabeledContent("상태", value: "비활성화됨 (Vault)")
+                        LabeledContent("원래 위치", value: b.originalPath ?? "알 수 없음").textSelection(.enabled)
+                    }
                     if b.isSymlink {
                         LabeledContent("실제 위치", value: b.resolvedPath).textSelection(.enabled)
                     }
@@ -153,6 +167,12 @@ struct ProductDetailView: View {
                     HStack {
                         Button("Finder에서 보기") {
                             NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: b.status == .offline ? b.path : b.resolvedPath)])
+                        }
+                        if b.status == .active {
+                            Button("비활성화 스크립트 만들기") { model.makeDisableScripts([b]) }
+                        }
+                        if b.status == .disabled {
+                            Button("복구 스크립트 만들기") { model.makeRestoreScript([b]) }
                         }
                     }
                 }

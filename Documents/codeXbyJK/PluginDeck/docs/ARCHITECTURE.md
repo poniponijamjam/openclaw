@@ -120,8 +120,8 @@ Action (이력)
 #### Vault 위치 (드라이브마다 따로, 같은 드라이브 안에서만 이동)
 | 원래 위치 | Vault |
 |---|---|
-| 내장 (`/Library`, `~/Library`) | `/Users/Shared/PluginDeck Vault/<format>/` |
-| 외장 (`/Volumes/<X>/...`) | `/Volumes/<X>/PluginDeck Vault/<format>/` |
+| 내장 (`/Library`, `~/Library`) | `/Users/Shared/PluginDeck Vault/<원래 절대 경로>` |
+| 외장 (`/Volumes/<X>/...`) | `/Volumes/<X>/PluginDeck Vault/<드라이브 안 경로>` |
 
 - 이유: 같은 볼륨 안의 `mv`는 이름 변경이라 즉시 끝나고 추가 용량이 들지 않음. 볼륨 간 `mv`는 복사 후 삭제.
 - 플러그인 폴더 **바깥**에 둠: Ableton이 VST 폴더 하위까지 스캔하므로 안에 두면 계속 보임
@@ -207,7 +207,7 @@ PluginDeck/
 |---|---|---|
 | M1 (완료, CI 통과, 앱 화면 미확인) | 스캐너 + 목록 보기 (읽기 전용) | 표준 5개 포맷 + 커스텀 폴더 스캔, 제품/벤더/포맷/드라이브별 표시 |
 | M2 (완료, CI 통과, 앱 화면 미확인) | 외장 VST 폴더 자동 찾기 + 중복 정리 제안 + AU 전용 목록 + 내보내기(MD, JSON) | 외장 Ableton 폴더를 직접 입력 없이 등록 가능 |
-| M3 | disable / restore 스크립트 생성 + Vault 스캔 + 이력 | 임시 폴더에서 스크립트 실행 -> 이동 -> 복원 테스트 통과 |
+| M3 (완료, CI 확인 예정) | disable / restore 스크립트 생성 + Vault 스캔 + 이력 | 임시 폴더에서 스크립트 실행 -> 이동 -> 복원 테스트 통과 |
 | M4 | 예전 맥 JSON과 비교 ("다시 깔아야 할 목록") | - |
 | M5 | 잔여물 탐지 (pkgutil 영수증, 벤더 데이터 폴더) | - |
 | M6 | 레트로 스킨 적용 | - |
