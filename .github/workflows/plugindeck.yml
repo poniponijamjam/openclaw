@@ -1,0 +1,45 @@
+name: PluginDeck
+
+on:
+  push:
+    paths:
+      - "Documents/codeXbyJK/PluginDeck/**"
+      - ".github/workflows/plugindeck.yml"
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: Documents/codeXbyJK/PluginDeck
+    steps:
+      - uses: actions/checkout@v5
+      - name: Toolchain
+        run: swift --version && sw_vers
+      - name: Build
+        run: swift build
+      - name: Test
+        env:
+          PLUGINDECK_SNAPSHOT_DIR: ${{ runner.temp }}/snapshots
+        run: swift test
+      - name: Print skin snapshots (base64 JPEG, for log readers)
+        if: always()
+        run: |
+          shopt -s nullglob
+          for f in "$RUNNER_TEMP"/snapshots/*.png; do
+            n=$(basename "$f" .png)
+            sips -s format jpeg -s formatOptions 62 -Z 1500 "$f" --out "$RUNNER_TEMP/$n.jpg" >/dev/null
+            echo "SNAPBEGIN $n"
+            base64 -i "$RUNNER_TEMP/$n.jpg" | tr -d '\n' | fold -w 6000
+            echo
+            echo "SNAPEND $n"
+          done
+      - name: Upload skin snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skin-snapshots
+          path: ${{ runner.temp }}/snapshots
+          if-no-files-found: ignore
+          retention-days: 14
