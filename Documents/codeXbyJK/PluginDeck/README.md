@@ -1,7 +1,7 @@
 # PluginDeck
 
 macOS 오디오 플러그인(AU / VST2 / VST3 / CLAP / AAX)이 어느 드라이브 어디에 있는지,
-Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M3.
+Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M4.
 
 설계: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
@@ -48,6 +48,14 @@ Xcode로 열기: `open Package.swift` 후 `PluginDeck` 스킴 실행.
 ```bash
 bash ~/Library/Application\ Support/PluginDeck/Scripts/disable-YYYYMMDD-HHMMSS.sh
 ```
+
+## M4 범위
+
+- 파일 > 예전 맥 스냅샷과 비교 (Cmd+K): 예전 맥에서 내보낸 JSON을 열어 지금 맥과 비교
+  - 빠진 제품 (다시 설치 필요), 포맷 일부 빠짐 (예: AU 없음 -> Logic에서 안 보임), 버전 다름, 지금 맥에만 있음
+  - 예전 맥에서도 비활성화돼 있던 제품은 재설치 목록에서 제외
+  - 지금 맥에서 비활성화(Vault)한 제품은 "있음"으로 봄 (일부러 끈 것)
+- "다시 설치할 목록" Markdown 체크리스트 내보내기 (벤더별)
 
 ## 폴더 구조
 

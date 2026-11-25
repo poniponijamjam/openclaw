@@ -27,6 +27,7 @@ struct PluginDeckApp: App {
                     case .cleanup: CleanupView().environmentObject(model)
                     case .history: HistoryView().environmentObject(model)
                     case .scriptResult: ScriptResultView().environmentObject(model)
+                    case .compare: CompareView().environmentObject(model)
                     }
                 }
         }
@@ -36,6 +37,9 @@ struct PluginDeckApp: App {
                     .keyboardShortcut("e", modifiers: [.command])
                 Button("스냅샷 내보내기 (JSON)...") { model.exportJSON() }
                     .keyboardShortcut("e", modifiers: [.command, .shift])
+                Divider()
+                Button("예전 맥 스냅샷과 비교...") { model.sheet = .compare }
+                    .keyboardShortcut("k", modifiers: [.command])
             }
         }
         Settings {
