@@ -49,9 +49,9 @@ struct PanelBackground: ViewModifier {
 struct LCDBackground: ViewModifier {
     @Environment(\.retroTheme) private var t
     func body(content: Content) -> some View {
+        // 줄무늬는 글자/버튼 뒤에 (위에 덮으면 버튼이 탁해짐)
         content
-            .background(t.lcdBackground)
-            .overlay(ScanLines(color: t.lcdGrid).allowsHitTesting(false))
+            .background(ZStack { t.lcdBackground; ScanLines(color: t.lcdGrid) })
             .retroBevel(raised: false, width: 2)
     }
 }

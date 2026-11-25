@@ -36,7 +36,8 @@ public struct RetroMainLayout<Info: View>: View {
                 VStack(spacing: 0) {
                     RetroTitleBar(playlistTitle)
                     VStack(spacing: 4) {
-                        Group {
+                        // Group이 아니라 VStack: Group은 안의 각 요소에 테두리를 따로 붙임
+                        VStack(spacing: 0) {
                             if scrollable {
                                 ScrollView { playlist }
                             } else {
@@ -70,11 +71,12 @@ public struct RetroMainLayout<Info: View>: View {
 
                 VStack(spacing: 0) {
                     RetroTitleBar("Info")
-                    Group {
+                    VStack(spacing: 0) {
                         if scrollable {
                             ScrollView { info }
                         } else {
-                            VStack(spacing: 0) { info; Spacer(minLength: 0) }
+                            info
+                            Spacer(minLength: 0)
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
