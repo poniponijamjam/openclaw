@@ -137,7 +137,7 @@ struct ProductDetailView: View {
     private func driveText(_ b: PluginBundle) -> String {
         guard let v = b.volume else { return "알 수 없음" }
         var s = v.name
-        if let internal = v.isInternal { s += internal ? " (내장)" : " (외장)" }
+        if let isInternal = v.isInternal { s += isInternal ? " (내장)" : " (외장)" }
         if !v.isOnline { s += " - 연결 안 됨" }
         return s
     }
