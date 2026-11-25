@@ -1,10 +1,12 @@
 import AppKit
 import PluginDeckCore
+import PluginDeckSkin
 import SwiftUI
 
 @main
 struct PluginDeckApp: App {
     @StateObject private var model = LibraryModel()
+    @AppStorage("PluginDeck.RetroSkin") private var retro = true
 
     init() {
         // `swift run`으로 실행할 때도 Dock 아이콘과 창이 앞으로 오도록
@@ -21,7 +23,9 @@ struct PluginDeckApp: App {
                     model.rescan()
                     model.openDiscoveryOnFirstLaunch()
                 }
+                .environment(\.retroTheme, retro ? .classic : .plain)
                 .sheet(item: $model.sheet) { sheet in
+                    Group {
                     switch sheet {
                     case .discovery: DiscoveryView().environmentObject(model)
                     case .cleanup: CleanupView().environmentObject(model)
@@ -30,6 +34,8 @@ struct PluginDeckApp: App {
                     case .compare: CompareView().environmentObject(model)
                     case .leftovers: LeftoverView().environmentObject(model)
                     }
+                    }
+                    .environment(\.retroTheme, retro ? .classic : .plain)
                 }
         }
         .commands {

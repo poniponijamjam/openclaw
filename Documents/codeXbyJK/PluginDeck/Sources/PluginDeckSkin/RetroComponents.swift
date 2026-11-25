@@ -146,7 +146,7 @@ public struct LCDLabel: View {
         Text(text)
             .font(t.font(size, bold: !dim))
             .foregroundStyle(color ?? (dim ? t.lcdDim : t.lcdText))
-            .shadow(color: (color ?? t.lcdText).opacity(dim ? 0 : 0.6), radius: 2)
+            .shadow(color: (color ?? t.lcdText).opacity(dim || !t.glow ? 0 : 0.6), radius: 2)
             .lineLimit(1)
     }
 }

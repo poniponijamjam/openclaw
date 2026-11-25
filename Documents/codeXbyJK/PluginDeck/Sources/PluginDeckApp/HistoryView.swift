@@ -1,5 +1,6 @@
 import AppKit
 import PluginDeckCore
+import PluginDeckSkin
 import SwiftUI
 
 extension LibraryModel {
@@ -53,53 +54,39 @@ struct ScriptResultView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let pair = model.lastScripts
+        let failed = model.scriptError != nil
+        RetroSheet(
+            failed ? "Script not created" : (pair?.disablePath == nil ? "Restore script ready" : "Disable script ready"),
+            subtitle: failed ? [] : [
+                "아직 아무 파일도 옮기지 않았습니다. 아래 명령을 복사해서 터미널에 붙여넣어 실행하세요.",
+                "시스템 폴더(/Library) 항목이 있으면 관리자 비밀번호를 한 번 물어봅니다. Logic / Ableton이 켜져 있으면 스크립트가 멈춥니다.",
+            ],
+            leadingFooter: [RetroAction("Open folder") {
+                NSWorkspace.shared.open(URL(fileURLWithPath: model.scriptDirectory))
+            }],
+            footer: [RetroAction("Close + rescan", highlight: true, shortcut: .defaultAction) {
+                dismiss()
+                model.rescan()
+            }]
+        ) {
             if let error = model.scriptError {
-                Text("스크립트를 만들지 못했습니다").font(.title2.bold())
-                Text(error).foregroundStyle(.red)
-            } else if let pair = model.lastScripts {
-                Text(pair.disablePath == nil ? "복구 스크립트를 만들었습니다" : "비활성화 스크립트를 만들었습니다")
-                    .font(.title2.bold())
-                Text("번들 \(pair.moves.count)개. 아직 아무 파일도 옮기지 않았습니다. 아래 명령을 터미널에 붙여넣어 실행하세요.")
-                    .foregroundStyle(.secondary)
-                Text("시스템 폴더(/Library) 항목이 있으면 관리자 비밀번호를 한 번 물어봅니다. Logic / Ableton이 켜져 있으면 스크립트가 멈춥니다.")
-                    .font(.caption).foregroundStyle(.secondary)
-
-                if let d = pair.disablePath { commandRow("1. 비활성화", path: d) }
-                commandRow(pair.disablePath == nil ? "복구" : "2. 되돌릴 때 (복구)", path: pair.restorePath)
-
-                List(pair.moves, id: \.self) { m in
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(m.from).font(.caption.monospaced())
-                        Text("-> " + m.to).font(.caption.monospaced()).foregroundStyle(.secondary)
-                    }
+                RetroText(error, tone: .warn)
+            } else if let pair {
+                RetroSectionHeader("Run in Terminal")
+                if let d = pair.disablePath { commandLine("1. Disable", path: d) }
+                commandLine(pair.disablePath == nil ? "Restore" : "2. Undo", path: pair.restorePath)
+                RetroSectionHeader("Moves", count: pair.moves.count)
+                ForEach(pair.moves, id: \.self) { m in
+                    RetroRow(m.from, detail: "-> " + m.to)
                 }
-                .frame(minHeight: 180)
-            }
-            HStack {
-                Button("Finder에서 스크립트 폴더 열기") {
-                    NSWorkspace.shared.open(URL(fileURLWithPath: model.scriptDirectory))
-                }
-                Spacer()
-                Button("닫기 후 다시 스캔") {
-                    dismiss()
-                    model.rescan()
-                }
-                .keyboardShortcut(.defaultAction)
             }
         }
-        .padding(20)
-        .frame(width: 720)
     }
 
-    private func commandRow(_ label: String, path: String) -> some View {
+    private func commandLine(_ label: String, path: String) -> some View {
         let cmd = LibraryModel.terminalCommand(for: path)
-        return HStack {
-            Text(label).frame(width: 130, alignment: .leading)
-            Text(cmd).font(.caption.monospaced()).textSelection(.enabled).lineLimit(1).truncationMode(.middle)
-            Spacer()
-            Button("명령 복사") { LibraryModel.copyToPasteboard(cmd) }
-        }
+        return RetroCommandLine(label: label, command: cmd, copy: RetroAction("Copy") { LibraryModel.copyToPasteboard(cmd) })
     }
 }
 
@@ -110,39 +97,31 @@ struct HistoryView: View {
     @State private var records: [ScriptRecord] = []
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("스크립트 이력").font(.title2.bold())
-            Text(model.scriptDirectory).font(.caption.monospaced()).foregroundStyle(.secondary).textSelection(.enabled)
-
+        RetroSheet(
+            "Script history",
+            subtitle: [
+                model.scriptDirectory,
+                "스크립트를 실행했는지는 기록하지 않습니다. 실제 상태는 목록의 '비활성화됨' 필터로 확인하세요.",
+            ],
+            footer: [RetroAction("Close", highlight: true, shortcut: .cancelAction) { dismiss() }]
+        ) {
             if records.isEmpty {
-                Text("아직 만든 스크립트가 없습니다.").foregroundStyle(.secondary)
+                RetroText("아직 만든 스크립트가 없습니다.", tone: .dim)
             } else {
-                List(records) { r in
-                    HStack {
-                        Text(r.kind == "disable" ? "비활성화" : "복구")
-                            .font(.caption.bold())
-                            .frame(width: 56, alignment: .leading)
-                            .foregroundStyle(r.kind == "disable" ? Color.orange : Color.green)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(r.title)
-                            Text(r.stamp + "  /  \(r.items)개").font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Button("명령 복사") { LibraryModel.copyToPasteboard(LibraryModel.terminalCommand(for: r.path)) }
-                        Button("보기") { NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: r.path)]) }
-                    }
+                ForEach(records) { r in
+                    RetroRow(
+                        tag: r.kind == "disable" ? "DISABLE" : "RESTORE",
+                        r.title,
+                        detail: r.stamp + "  /  \(r.items)개",
+                        tone: r.kind == "disable" ? .accent : .normal,
+                        actions: [
+                            RetroAction("Copy") { LibraryModel.copyToPasteboard(LibraryModel.terminalCommand(for: r.path)) },
+                            RetroAction("Show") { NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: r.path)]) },
+                        ]
+                    )
                 }
-                .frame(minHeight: 280)
-            }
-            Text("스크립트를 실행했는지는 기록하지 않습니다. 실제 상태는 목록의 '비활성화됨' 필터로 확인하세요.")
-                .font(.caption).foregroundStyle(.secondary)
-            HStack {
-                Spacer()
-                Button("닫기") { dismiss() }.keyboardShortcut(.defaultAction)
             }
         }
-        .padding(20)
-        .frame(width: 720)
         .onAppear { records = ScriptStore.list(directory: model.scriptDirectory) }
     }
 }

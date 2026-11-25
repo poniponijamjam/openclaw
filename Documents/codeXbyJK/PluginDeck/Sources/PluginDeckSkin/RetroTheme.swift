@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// 레트로 스킨 색/글꼴 토큰. 화면은 이 값만 참조한다 (스킨 교체 = 이 값 교체).
@@ -19,6 +20,10 @@ public struct RetroTheme: Sendable {
     public var selectionText: Color
     public var buttonFace: Color
     public var buttonText: Color
+    /// 고정폭 글꼴 (레트로) / 시스템 글꼴 (기본)
+    public var monospaced: Bool = true
+    /// LCD 글자 번짐 효과
+    public var glow: Bool = true
 
     public static let classic = RetroTheme(
         panel: Color(hex: 0x2A2A35),
@@ -39,8 +44,30 @@ public struct RetroTheme: Sendable {
         buttonText: Color(hex: 0xD8D8E4)
     )
 
+    /// 레트로 스킨을 끈 경우: 같은 부품을 macOS 기본 색으로 그린다 (다크/라이트 모드 따라감)
+    public static let plain = RetroTheme(
+        panel: Color(nsColor: .windowBackgroundColor),
+        panelLight: Color(nsColor: .separatorColor),
+        panelDark: Color(nsColor: .separatorColor),
+        titleBar: Color(nsColor: .windowBackgroundColor),
+        titleStripe: Color(nsColor: .separatorColor),
+        titleText: Color(nsColor: .secondaryLabelColor),
+        lcdBackground: Color(nsColor: .textBackgroundColor),
+        lcdText: Color(nsColor: .labelColor),
+        lcdDim: Color(nsColor: .secondaryLabelColor),
+        lcdGrid: .clear,
+        accent: Color(nsColor: .systemOrange),
+        warning: Color(nsColor: .systemRed),
+        selection: Color(nsColor: .selectedContentBackgroundColor),
+        selectionText: Color(nsColor: .alternateSelectedControlTextColor),
+        buttonFace: Color(nsColor: .controlColor),
+        buttonText: Color(nsColor: .controlTextColor),
+        monospaced: false,
+        glow: false
+    )
+
     public func font(_ size: CGFloat, bold: Bool = false) -> Font {
-        .system(size: size, weight: bold ? .bold : .regular, design: .monospaced)
+        .system(size: monospaced ? size : size + 1, weight: bold ? .bold : .regular, design: monospaced ? .monospaced : .default)
     }
 }
 

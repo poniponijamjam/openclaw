@@ -85,4 +85,56 @@ final class SkinSnapshotTests: XCTestCase {
                              name: "player", size: CGSize(width: 900, height: 140))
         XCTAssertGreaterThan(png.count, 5_000)
     }
+
+    @MainActor
+    func sampleSheet() -> some View {
+        RetroSheet(
+            "Duplicate cleanup",
+            subtitle: ["규칙: Logic은 AU, Ableton은 VST3. VST3가 있는 제품의 VST2만 비활성화 후보로 봅니다.",
+                       "스크립트만 만듭니다. 파일은 터미널에서 직접 실행해야 옮겨집니다."],
+            minBodyHeight: 300,
+            leadingFooter: [RetroAction("All") {}, RetroAction("None") {}],
+            footer: [RetroAction("Make script (2)", highlight: true) {}, RetroAction("Close") {}],
+            scrollable: false
+        ) {
+            RetroSectionHeader("VST2 to disable - VST3 exists", count: 3)
+            RetroCheckRow(isOn: .constant(true)) {
+                VStack(alignment: .leading, spacing: 1) {
+                    RetroText("Pro-Q 3")
+                    RetroText("/Library/Audio/Plug-Ins/VST/FabFilter Pro-Q 3.vst", tone: .dim, size: 9)
+                }
+            }
+            RetroCheckRow(isOn: .constant(true)) {
+                VStack(alignment: .leading, spacing: 1) {
+                    RetroText("Pro-L 2")
+                    RetroText("/Library/Audio/Plug-Ins/VST/FabFilter Pro-L 2.vst", tone: .dim, size: 9)
+                }
+            }
+            RetroCheckRow(isOn: .constant(false)) {
+                VStack(alignment: .leading, spacing: 1) {
+                    RetroText("Wavetable Pack")
+                    RetroText("/Volumes/SSD/Ableton VST/Wavetable Pack.vst", tone: .dim, size: 9)
+                }
+            }
+            RetroSectionHeader("Gone from Ableton if AU is off", count: 1)
+            RetroRow("Vintage Synth 1999", trailing: "Old Vendor", tone: .accent)
+            RetroSectionHeader("Run in Terminal")
+            RetroCommandLine(label: "1. Disable", command: "bash '~/Library/Application Support/PluginDeck/Scripts/disable-20261125-150000.sh'",
+                             copy: RetroAction("Copy") {})
+            RetroRow(tag: "DISABLE", "비활성화 2개 (복구: restore-20261125-150000.sh)", detail: "20261125-150000  /  2개", tone: .accent,
+                     actions: [RetroAction("Copy") {}, RetroAction("Show") {}])
+        }
+    }
+
+    @MainActor
+    func testRenderSheetClassic() throws {
+        let png = try render(sampleSheet(), name: "sheet-classic", size: CGSize(width: 720, height: 520))
+        XCTAssertGreaterThan(png.count, 10_000)
+    }
+
+    @MainActor
+    func testRenderSheetPlainTheme() throws {
+        let png = try render(sampleSheet().environment(\.retroTheme, .plain), name: "sheet-plain", size: CGSize(width: 720, height: 520))
+        XCTAssertGreaterThan(png.count, 5_000)
+    }
 }

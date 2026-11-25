@@ -6,12 +6,16 @@ public struct RetroAction: Identifiable {
     public var title: String
     public var highlight: Bool
     public var enabled: Bool
+    /// .cancelAction (Esc) / .defaultAction (Enter) 등
+    public var shortcut: KeyboardShortcut?
     public var perform: () -> Void
 
-    public init(_ title: String, highlight: Bool = false, enabled: Bool = true, perform: @escaping () -> Void) {
+    public init(_ title: String, highlight: Bool = false, enabled: Bool = true, shortcut: KeyboardShortcut? = nil,
+                perform: @escaping () -> Void) {
         self.title = title
         self.highlight = highlight
         self.enabled = enabled
+        self.shortcut = shortcut
         self.perform = perform
     }
 }
@@ -25,6 +29,7 @@ public struct RetroActionRow: View {
                 Button(a.title, action: a.perform)
                     .buttonStyle(RetroButtonStyle(highlight: a.highlight))
                     .disabled(!a.enabled)
+                    .keyboardShortcut(a.shortcut)
             }
         }
     }

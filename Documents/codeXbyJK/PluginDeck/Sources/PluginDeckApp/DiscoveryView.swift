@@ -1,5 +1,6 @@
 import AppKit
 import PluginDeckCore
+import PluginDeckSkin
 import SwiftUI
 
 enum AppSheet: String, Identifiable {
@@ -38,7 +39,7 @@ enum FolderRole {
     case abletonVST2, abletonVST3, extra
 }
 
-/// 외장 드라이브 훑기. 처음 실행할 때 한 번 자동으로 열리고, 이후엔 툴바 버튼으로.
+/// 외장 드라이브 훑기. 처음 실행할 때 한 번 자동으로 열리고, 이후엔 버튼으로.
 struct DiscoveryView: View {
     @EnvironmentObject var model: LibraryModel
     @Environment(\.dismiss) private var dismiss
@@ -47,61 +48,50 @@ struct DiscoveryView: View {
     @State private var elapsed: TimeInterval = 0
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("외장 드라이브에서 플러그인 폴더 찾기").font(.title2.bold())
-            Text("연결된 드라이브를 5단계 깊이까지 훑어서 .vst / .vst3 / .component 가 있는 폴더를 찾습니다. 파일은 읽기만 합니다.")
-                .foregroundStyle(.secondary)
-            Text("Ableton 환경설정 > Plug-Ins 의 커스텀 폴더와 같은 폴더를 골라 등록하세요.")
-                .foregroundStyle(.secondary)
-
+        RetroSheet(
+            "Find plugin folders",
+            subtitle: [
+                "연결된 드라이브를 5단계 깊이까지 훑어서 .vst / .vst3 / .component 가 있는 폴더를 찾습니다. 파일은 읽기만 합니다.",
+                "Ableton 환경설정 > Plug-Ins 의 커스텀 폴더와 같은 폴더를 골라 VST3 / VST2 로 등록하세요. 추천 칸은 주황색입니다.",
+            ],
+            leadingFooter: [RetroAction(result == nil ? "Search" : "Search again", enabled: !searching) { search() }],
+            footer: [RetroAction("Close", highlight: true, shortcut: .cancelAction) {
+                dismiss()
+                model.rescan()
+            }]
+        ) {
             if searching {
-                HStack { ProgressView().controlSize(.small); Text("찾는 중...") }
+                RetroBusy("SEARCHING DRIVES")
             } else if let result {
-                Text("폴더 \(result.visitedDirectories)개 확인, \(String(format: "%.1f", elapsed))초"
-                     + (result.truncated ? " - 한도에 걸려 중간에 멈춤 (일부만 확인)" : ""))
-                    .font(.caption).foregroundStyle(result.truncated ? Color.orange : Color.secondary)
+                RetroText("폴더 \(result.visitedDirectories)개 확인, \(String(format: "%.1f", elapsed))초"
+                          + (result.truncated ? " - 한도에 걸려 중간에 멈춤 (일부만 확인)" : ""),
+                          tone: result.truncated ? .accent : .dim, size: 10)
                 if result.candidates.isEmpty {
-                    Text("플러그인 폴더를 찾지 못했습니다. 외장 드라이브가 연결되어 있는지 확인하세요.")
+                    RetroText("플러그인 폴더를 찾지 못했습니다. 외장 드라이브가 연결되어 있는지 확인하세요.")
+                        .padding(.top, 8)
                 } else {
-                    List(result.candidates) { c in candidateRow(c) }
-                        .frame(minHeight: 220)
+                    RetroSectionHeader("Candidates", count: result.candidates.count)
+                    ForEach(result.candidates) { c in row(c) }
                 }
-            }
-
-            HStack {
-                Button(result == nil ? "찾기" : "다시 찾기") { search() }.disabled(searching)
-                Spacer()
-                Button("닫기") {
-                    dismiss()
-                    model.rescan()
-                }
-                .keyboardShortcut(.defaultAction)
             }
         }
-        .padding(20)
-        .frame(width: 680)
         .onAppear { if result == nil { search() } }
     }
 
-    private func candidateRow(_ c: FolderCandidate) -> some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(c.path).font(.callout.monospaced()).textSelection(.enabled)
-                Text(countsText(c) + "  /  드라이브: \(c.volumeName)").font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
-            if model.isRegistered(c.path) {
-                Label("등록됨", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-            } else {
-                Menu("등록") {
-                    Button("Ableton VST3 커스텀 폴더로") { model.register(c, as: .abletonVST3) }
-                    Button("Ableton VST2 커스텀 폴더로") { model.register(c, as: .abletonVST2) }
-                    Button("추가 스캔 폴더로 (DAW 판정 없음)") { model.register(c, as: .extra) }
-                }
-                .fixedSize()
-            }
-        }
-        .padding(.vertical, 2)
+    private func row(_ c: FolderCandidate) -> some View {
+        let registered = model.isRegistered(c.path)
+        return RetroRow(
+            tag: c.volumeName,
+            c.path,
+            detail: countsText(c),
+            trailing: registered ? "REGISTERED" : nil,
+            tone: registered ? .dim : .normal,
+            actions: registered ? [] : [
+                RetroAction("VST3", highlight: c.suggestedFormat == .vst3) { model.register(c, as: .abletonVST3) },
+                RetroAction("VST2", highlight: c.suggestedFormat == .vst2) { model.register(c, as: .abletonVST2) },
+                RetroAction("Extra") { model.register(c, as: .extra) },
+            ]
+        )
     }
 
     private func countsText(_ c: FolderCandidate) -> String {

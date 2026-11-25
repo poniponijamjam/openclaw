@@ -82,7 +82,8 @@ bash ~/Library/Application\ Support/PluginDeck/Scripts/disable-YYYYMMDD-HHMMSS.s
 - 아래 오른쪽: "정보" 패널 - 포맷별 경로/드라이브/버전/아키텍처/DAW + Finder / Disable / Restore 버튼
 - 설정 > 화면 > "레트로 스킨 사용"을 끄면 기본 macOS 화면
 - 색/글꼴은 `Sources/PluginDeckSkin/RetroTheme.swift` 한 곳에서 관리
-- 시트(외장 찾기, 중복 정리 등)는 아직 기본 macOS 스타일
+- 팝업(외장 찾기, 중복 정리, 스크립트 결과, 이력, 비교, 잔여물)도 같은 스킨. 레트로를 끄면 같은 부품을 macOS 기본 색(`RetroTheme.plain`)으로 그림
+- 팝업 단축키: Esc 닫기, 스크립트 결과 화면은 Enter로 닫고 다시 스캔
 - CI가 스킨을 PNG로 렌더링해 `skin-snapshots` 결과물로 올림
 
 ## 폴더 구조
