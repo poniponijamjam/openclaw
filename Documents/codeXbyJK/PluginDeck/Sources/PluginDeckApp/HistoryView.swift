@@ -5,8 +5,8 @@ import SwiftUI
 extension LibraryModel {
     var scriptDirectory: String { ScriptStore.defaultDirectory }
 
-    func makeDisableScripts(_ bundles: [PluginBundle]) {
-        let moves = ScriptWriter.disableMoves(for: bundles, layout: VaultLayout())
+    func makeDisableScripts(_ bundles: [PluginBundle], extraPaths: [String] = []) {
+        let moves = ScriptWriter.disableMoves(for: bundles, extraPaths: extraPaths, layout: VaultLayout())
         guard !moves.isEmpty else {
             scriptError = "옮길 수 있는 번들이 없습니다 (오프라인이거나 이미 비활성화됨)."
             sheet = .scriptResult

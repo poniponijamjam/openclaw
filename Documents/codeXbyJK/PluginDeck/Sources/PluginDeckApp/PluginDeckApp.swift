@@ -28,6 +28,7 @@ struct PluginDeckApp: App {
                     case .history: HistoryView().environmentObject(model)
                     case .scriptResult: ScriptResultView().environmentObject(model)
                     case .compare: CompareView().environmentObject(model)
+                    case .leftovers: LeftoverView().environmentObject(model)
                     }
                 }
         }
@@ -146,6 +147,12 @@ struct ProductDetailView: View {
                 LabeledContent("벤더", value: product.vendor ?? "알 수 없음")
                 LabeledContent("포맷", value: product.formats.map(\.displayName).joined(separator: ", "))
                 LabeledContent("총 용량", value: ByteCountFormatter.string(fromByteCount: product.totalSize, countStyle: .file))
+                HStack {
+                    Button("잔여물 찾기 / 제품 전체 정리...") {
+                        model.leftoverProduct = product
+                        model.sheet = .leftovers
+                    }
+                }
             } header: {
                 Text(product.displayName).font(.title2.bold())
             }

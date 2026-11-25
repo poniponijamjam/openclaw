@@ -8,6 +8,7 @@ enum AppSheet: String, Identifiable {
     case history
     case scriptResult
     case compare
+    case leftovers
     var id: String { rawValue }
 }
 

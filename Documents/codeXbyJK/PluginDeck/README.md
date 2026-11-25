@@ -1,7 +1,7 @@
 # PluginDeck
 
 macOS 오디오 플러그인(AU / VST2 / VST3 / CLAP / AAX)이 어느 드라이브 어디에 있는지,
-Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M4.
+Logic Pro / Ableton Live 12에서 보이는지 한눈에 확인하는 앱. 현재 M5.
 
 설계: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
@@ -56,6 +56,22 @@ bash ~/Library/Application\ Support/PluginDeck/Scripts/disable-YYYYMMDD-HHMMSS.s
   - 예전 맥에서도 비활성화돼 있던 제품은 재설치 목록에서 제외
   - 지금 맥에서 비활성화(Vault)한 제품은 "있음"으로 봄 (일부러 끈 것)
 - "다시 설치할 목록" Markdown 체크리스트 내보내기 (벤더별)
+
+## M5 범위
+
+상세 화면 > "잔여물 찾기 / 제품 전체 정리"
+
+| 찾는 것 | 방법 | 기본 선택 |
+|---|---|---|
+| 설치 패키지가 깐 파일 | `pkgutil --file-info` 로 번들의 설치 패키지를 찾고 `pkgutil --files` 목록에서 번들 밖 파일 | 확실 (선택) |
+| 환경설정 / 캐시 | `~/Library/Preferences/<번들 ID>.plist`, `~/Library/Caches/<번들 ID>` | 확실 (선택) |
+| 벤더 데이터 / 프리셋 폴더 | `Application Support`, `Audio/Presets` 아래 벤더 이름 폴더 | 추정 (선택 안 함) |
+| 같은 벤더 다른 제품도 쓰는 폴더 | 위와 같음 | 공용 (선택 안 함) |
+
+- `/Library`, `Plug-Ins/VST3` 같은 공용 폴더는 후보에서 제외 (설치 기록의 "끝 항목"만 봄)
+- 여러 제품을 한 번에 까는 설치 패키지면 경고
+- 선택한 잔여물은 플러그인 번들과 같은 스크립트로 Vault에 옮김 (복구 스크립트 포함)
+- 설치 기록 자체(`pkgutil --forget`)는 지우지 않음
 
 ## 폴더 구조
 

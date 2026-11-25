@@ -38,6 +38,7 @@ final class LibraryModel: ObservableObject {
     @Published var selection: Product.ID?
     @Published var sheet: AppSheet?
     @Published var lastScripts: ScriptPair?
+    @Published var leftoverProduct: Product?
     @Published var scriptError: String?
     @Published var settings: HostSettings { didSet { saveSettings() } }
     @Published var extraFolders: [String] { didSet { saveSettings() } }

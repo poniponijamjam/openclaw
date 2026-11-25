@@ -28,6 +28,16 @@ public enum ScriptWriter {
         })
     }
 
+    /// 번들이 아닌 경로(잔여물 폴더/파일) -> Vault. 같은 Vault 규칙을 쓰므로 복구도 같은 방식
+    public static func disableMoves(forPaths paths: [String], layout: VaultLayout) -> [FileMove] {
+        unique(paths.map { FileMove(from: $0, to: layout.vaultPath(forOriginal: $0)) })
+    }
+
+    /// 번들 + 잔여물을 한 스크립트로
+    public static func disableMoves(for bundles: [PluginBundle], extraPaths: [String], layout: VaultLayout) -> [FileMove] {
+        unique(disableMoves(for: bundles, layout: layout) + disableMoves(forPaths: extraPaths, layout: layout))
+    }
+
     /// Vault 번들 -> 원래 위치
     public static func restoreMoves(for bundles: [PluginBundle]) -> [FileMove] {
         unique(bundles.compactMap { b in
